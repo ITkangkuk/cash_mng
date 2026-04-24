@@ -30,20 +30,6 @@
             text-align: center;
         }
 
-        .logo {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 24px;
-            border-radius: 20px;
-            background: #d1fae5;
-            color: #047857;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
         h1 {
             font-size: 28px;
             margin-bottom: 10px;
@@ -90,13 +76,43 @@
             font-size: 14px;
             color: #dc2626;
         }
+
+        .logo {
+            width: 180px;
+            height: 120px;
+            margin: 0 auto 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .remember-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0 18px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .remember-box input {
+            width: auto;
+            margin: 0;
+        }
     </style>
+
+    <link rel="icon" href="/images/cash_mng_icon.png">
 </head>
 <body>
 
 <div class="login-box">
     <div class="logo">
-        이미지
+        <img src="/images/cash_mng_icon.png" alt="logo">
     </div>
 
     <h1>로그인</h1>
@@ -104,6 +120,10 @@
 
     <input type="text" id="loginId" placeholder="아이디">
     <input type="password" id="password" placeholder="비밀번호">
+    <label class="remember-box">
+        <input type="checkbox" id="rememberMe">
+        자동 로그인
+    </label>
 
     <button onclick="login()">로그인</button>
 
@@ -115,10 +135,12 @@
         const loginId = document.getElementById("loginId").value;
         const password = document.getElementById("password").value;
         const errorMessage = document.getElementById("errorMessage");
+        const rememberMe = document.getElementById("rememberMe").checked;
 
         const formData = new URLSearchParams();
         formData.append("loginId", loginId);
         formData.append("password", password);
+        formData.append("rememberMe", rememberMe);
 
         fetch("/api/auth/login", {
             method: "POST",

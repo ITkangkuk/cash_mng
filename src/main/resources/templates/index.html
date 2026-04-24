@@ -26,19 +26,6 @@
             text-align: center;
         }
 
-        .image-box {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 30px;
-            border-radius: 28px;
-            background: rgba(255,255,255,0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            backdrop-filter: blur(8px);
-        }
-
         .title {
             font-size: 38px;
             font-weight: bold;
@@ -71,13 +58,30 @@
             from { width: 20%; }
             to { width: 100%; }
         }
+
+        .image-box {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
     </style>
+
+    <link rel="icon" href="/images/cash_mng_icon.png">
 </head>
 <body>
 
 <div class="loading-container">
     <div class="image-box">
-        이미지 영역
+        <img src="/images/cash_mng_icon.png" alt="logo">
     </div>
 
     <div class="title">Finance Manager</div>
