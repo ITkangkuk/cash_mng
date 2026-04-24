@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대시보드</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f5f7f6;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .logout-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 12px;
+            background: #e5e7eb;
+            cursor: pointer;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 80px;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .bar-bg {
+            height: 28px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #10b981;
+            border-radius: 999px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+        }
+
+        .goal-row {
+            margin-bottom: 20px;
+        }
+
+        .goal-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .progress-bg {
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>재무관리 대시보드</h1>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+
+    <div class="card">
+        <h2>이번달 항목별 지출</h2>
+
+        <div class="bar-row">
+            <div>식비</div>
+            <div class="bar-bg">
+                <div class="bar-fill" style="width: 100%;"></div>
+            </div>
+            <div>68만원</div>
+        </div>
+
+        <div class="bar-row">
+            <div>쇼핑</div>
+            <div class="bar-bg">
+                <div class="bar-fill" style="width: 79%;"></div>
+            </div>
+            <div>54만원</div>
+        </div>
+
+        <div class="bar-row">
+            <div>교통</div>
+            <div class="bar-bg">
+                <div class="bar-fill" style="width: 47%;"></div>
+            </div>
+            <div>32만원</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>저번달 / 이번달 비교</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>항목</th>
+                    <th>저번달</th>
+                    <th>이번달</th>
+                    <th>증감</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>소비</td>
+                    <td>780,000원</td>
+                    <td>910,000원</td>
+                    <td>+130,000원</td>
+                </tr>
+                <tr>
+                    <td>투자</td>
+                    <td>300,000원</td>
+                    <td>450,000원</td>
+                    <td>+150,000원</td>
+                </tr>
+                <tr>
+                    <td>수입</td>
+                    <td>3,000,000원</td>
+                    <td>3,200,000원</td>
+                    <td>+200,000원</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>목표 달성률</h2>
+
+        <div class="goal-row">
+            <div class="goal-title">
+                <span>월 생활비 100만원 이하</span>
+                <span>72%</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" style="width: 72%;"></div>
+            </div>
+        </div>
+
+        <div class="goal-row">
+            <div class="goal-title">
+                <span>월 투자 40만원 달성</span>
+                <span>100%</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function logout() {
+        fetch("/api/auth/logout", {
+            method: "POST"
+        }).then(() => {
+            location.href = "/login";
+        });
+    }
+</script>
+
+</body>
+</html>

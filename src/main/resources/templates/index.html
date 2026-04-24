@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Manager</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #047857, #10b981);
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        .loading-container {
+            text-align: center;
+        }
+
+        .image-box {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 30px;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            backdrop-filter: blur(8px);
+        }
+
+        .title {
+            font-size: 38px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            margin-top: 12px;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .progress {
+            width: 220px;
+            height: 8px;
+            margin: 30px auto 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 70%;
+            background: white;
+            border-radius: 999px;
+            animation: loading 1s infinite alternate;
+        }
+
+        @keyframes loading {
+            from { width: 20%; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-container">
+    <div class="image-box">
+        이미지 영역
+    </div>
+
+    <div class="title">Finance Manager</div>
+    <div class="subtitle">잠시만 기다려 주세요</div>
+
+    <div class="progress">
+        <div class="progress-bar"></div>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => {
+        fetch('/api/auth/check')
+            .then(response => response.json())
+            .then(data => {
+                if (data.loggedIn) {
+                    location.href = '/dashboard';
+                } else {
+                    location.href = '/login';
+                }
+            })
+            .catch(() => {
+                location.href = '/login';
+            });
+    }, 1000);
+</script>
+
+</body>
+</html>
