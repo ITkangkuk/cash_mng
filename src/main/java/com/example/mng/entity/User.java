@@ -21,6 +21,9 @@ public class User {
 
     private String kakaoTargetYn;
 
+    @Column(length = 50)
+    private String sharedGroupCode;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -47,6 +50,10 @@ public class User {
 
     public String getKakaoTargetYn() {
         return kakaoTargetYn;
+    }
+
+    public String getSharedGroupCode() {
+        return sharedGroupCode;
     }
 
     private String autoLoginToken;

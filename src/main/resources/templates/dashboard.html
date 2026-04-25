@@ -1,19 +1,36 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대시보드</title>
 
     <style>
+        :root {
+            --bg: #f4f6f8;
+            --panel: #ffffff;
+            --line: #e5e7eb;
+            --text: #111827;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --income: #166534;
+            --expense: #b91c1c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            background: #f5f7f6;
+            background: var(--bg);
+            color: var(--text);
             font-family: Arial, sans-serif;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1160px;
             margin: 0 auto;
             padding: 32px;
         }
@@ -21,84 +38,329 @@
         .header {
             display: flex;
             justify-content: space-between;
+            gap: 16px;
             align-items: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            color: var(--muted);
+        }
+
+        .nav-btn,
+        .report-btn,
+        .settings-trigger,
+        .menu-item,
+        .logout-btn,
+        .delete-btn,
+        .complete-btn,
+        .submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
         }
 
         .logout-btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 12px;
+            padding: 10px 16px;
             background: #e5e7eb;
-            cursor: pointer;
+            color: var(--text);
         }
 
-        .card {
-            background: white;
-            border-radius: 24px;
-            padding: 28px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-        }
-
-        .bar-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 80px;
-            gap: 14px;
+        .header-actions {
+            display: flex;
+            gap: 10px;
             align-items: center;
-            margin-bottom: 14px;
         }
 
-        .bar-bg {
-            height: 28px;
+        .settings-menu-wrap {
+            position: relative;
+        }
+
+        .settings-trigger {
+            width: 42px;
+            height: 42px;
             background: #e5e7eb;
-            border-radius: 999px;
-            overflow: hidden;
+            color: var(--text);
+            font-size: 20px;
         }
 
-        .bar-fill {
-            height: 100%;
-            background: #10b981;
-            border-radius: 999px;
+        .settings-popover {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            z-index: 10;
+            display: none;
+            min-width: 150px;
+            padding: 8px;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+        }
+
+        .settings-popover.open {
+            display: block;
+        }
+
+        .menu-item {
+            width: 100%;
+            height: 38px;
+            padding: 0 12px;
+            background: transparent;
+            color: var(--text);
+            text-align: left;
+        }
+
+        .menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .report-btn {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .month-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+            padding: 18px 20px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .month-title {
+            margin: 0;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .nav-btn {
+            min-width: 44px;
+            height: 40px;
+            padding: 0 14px;
+            background: #eef2f7;
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card,
+        .section {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+        }
+
+        .summary-card {
+            padding: 20px;
+        }
+
+        .summary-card span {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .summary-card strong {
+            display: block;
+            margin-top: 10px;
+            font-size: 26px;
+        }
+
+        .income {
+            color: var(--income);
+        }
+
+        .expense {
+            color: var(--expense);
+        }
+
+        .section {
+            margin-top: 18px;
+            padding: 24px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .transaction-form {
+            display: grid;
+            grid-template-columns: 130px 1fr 160px 170px;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .memo-row {
+            display: grid;
+            grid-template-columns: 1fr 170px 120px;
+            gap: 12px;
+            margin-top: 12px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 42px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0 12px;
+            font-size: 15px;
+            background: #ffffff;
+        }
+
+        .checkbox-field {
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .checkbox-field input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        .submit-btn {
+            height: 42px;
+            background: var(--primary);
+            color: white;
+        }
+
+        .submit-btn:hover,
+        .complete-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .delete-btn {
+            height: 34px;
+            padding: 0 12px;
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .complete-btn {
+            height: 38px;
+            padding: 0 14px;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .select-check {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
+            min-width: 900px;
             border-collapse: collapse;
         }
 
-        th, td {
-            padding: 14px;
-            border-bottom: 1px solid #eee;
+        th,
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--line);
             text-align: left;
+            white-space: nowrap;
         }
 
         th {
-            background: #f3f4f6;
+            color: var(--muted);
+            background: #f9fafb;
+            font-size: 13px;
         }
 
-        .goal-row {
-            margin-bottom: 20px;
+        .amount {
+            text-align: right;
+            font-weight: 700;
         }
 
-        .goal-title {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: bold;
+        .empty {
+            padding: 34px 12px;
+            color: var(--muted);
+            text-align: center;
         }
 
-        .progress-bg {
-            height: 12px;
-            background: #e5e7eb;
-            border-radius: 999px;
-            overflow: hidden;
-        }
+        @media (max-width: 820px) {
+            .container {
+                padding: 22px 16px;
+            }
 
-        .progress-fill {
-            height: 100%;
-            background: #10b981;
-            border-radius: 999px;
+            .header,
+            .section-title {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .header-actions,
+            .month-bar {
+                width: 100%;
+            }
+
+            .header-actions {
+                justify-content: space-between;
+            }
+
+            .summary-grid,
+            .transaction-form,
+            .memo-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 
@@ -109,100 +371,248 @@
 <div class="container">
 
     <div class="header">
-        <h1>재무관리 대시보드</h1>
-        <button class="logout-btn" onclick="logout()">로그아웃</button>
-    </div>
-
-    <div class="card">
-        <h2>이번달 항목별 지출</h2>
-
-        <div class="bar-row">
-            <div>식비</div>
-            <div class="bar-bg">
-                <div class="bar-fill" style="width: 100%;"></div>
-            </div>
-            <div>68만원</div>
+        <div>
+            <h1>재무관리 대시보드</h1>
+            <p th:text="${userName != null ? userName + '님의 수입과 지출을 기록합니다.' : '수입과 지출을 기록합니다.'}">
+                수입과 지출을 기록합니다.
+            </p>
         </div>
-
-        <div class="bar-row">
-            <div>쇼핑</div>
-            <div class="bar-bg">
-                <div class="bar-fill" style="width: 79%;"></div>
+        <div class="header-actions">
+            <a class="report-btn" th:href="@{/report(month=${selectedMonth})}">레포트</a>
+            <div class="settings-menu-wrap">
+                <button class="settings-trigger" type="button" onclick="toggleSettingsMenu()" aria-label="설정 메뉴"
+                        aria-expanded="false">
+                    &#9881;
+                </button>
+                <div class="settings-popover" id="settingsPopover">
+                    <a class="menu-item" href="/settings">설정</a>
+                    <button class="menu-item" type="button" onclick="logout()">로그아웃</button>
+                </div>
             </div>
-            <div>54만원</div>
-        </div>
-
-        <div class="bar-row">
-            <div>교통</div>
-            <div class="bar-bg">
-                <div class="bar-fill" style="width: 47%;"></div>
-            </div>
-            <div>32만원</div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>저번달 / 이번달 비교</h2>
+    <div class="month-bar">
+        <a class="nav-btn" th:href="@{/dashboard(month=${prevMonth})}" aria-label="이전달">‹</a>
+        <h2 class="month-title" th:text="${displayMonth}">2026년 4월</h2>
+        <a class="nav-btn" th:href="@{/dashboard(month=${nextMonth})}" aria-label="다음달">›</a>
+    </div>
 
-        <table>
-            <thead>
+    <div class="summary-grid">
+        <div class="summary-card">
+            <span>총 수입</span>
+            <strong class="income" th:text="${#numbers.formatDecimal(incomeTotal, 0, 'COMMA', 0, 'POINT')} + '원'">0원</strong>
+        </div>
+        <div class="summary-card">
+            <span>총 지출</span>
+            <strong class="expense" th:text="${#numbers.formatDecimal(expenseTotal, 0, 'COMMA', 0, 'POINT')} + '원'">0원</strong>
+        </div>
+        <div class="summary-card">
+            <span>잔액</span>
+            <strong th:text="${#numbers.formatDecimal(balance, 0, 'COMMA', 0, 'POINT')} + '원'">0원</strong>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>거래 추가</h2>
+        </div>
+
+        <form action="/transactions" method="post">
+            <input type="hidden" name="returnMonth" th:value="${selectedMonth}">
+            <div class="transaction-form">
+                <div>
+                    <label for="type">구분</label>
+                    <select id="type" name="type" required>
+                        <option value="EXPENSE">지출</option>
+                        <option value="INCOME">수입</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="category">항목</label>
+                    <select id="category" name="category" required></select>
+                </div>
+
+                <div>
+                    <label for="amount">금액</label>
+                    <input id="amount" name="amount" type="number" min="1" step="1" placeholder="50000" required>
+                </div>
+
+                <div>
+                    <label for="transactionDate">날짜</label>
+                    <input id="transactionDate" name="transactionDate" type="date" th:value="${today}" required>
+                </div>
+            </div>
+
+            <div class="memo-row">
+                <div>
+                    <label for="description">메모</label>
+                    <input id="description" name="description" type="text" placeholder="선택 입력">
+                </div>
+                <div>
+                    <label for="paymentRequired">지급 필요</label>
+                    <label class="checkbox-field">
+                        <input id="paymentRequired" name="paymentRequired" type="checkbox" value="true">
+                        필요
+                    </label>
+                </div>
+                <button class="submit-btn" type="submit">추가</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>거래 내역</h2>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
                 <tr>
+                    <th>날짜</th>
+                    <th>구분</th>
                     <th>항목</th>
-                    <th>저번달</th>
-                    <th>이번달</th>
-                    <th>증감</th>
+                    <th>작성자</th>
+                    <th>지급</th>
+                    <th>메모</th>
+                    <th class="amount">금액</th>
+                    <th>관리</th>
                 </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>소비</td>
-                    <td>780,000원</td>
-                    <td>910,000원</td>
-                    <td>+130,000원</td>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(transactions)}">
+                    <td class="empty" colspan="8">아직 등록된 거래가 없습니다.</td>
                 </tr>
-                <tr>
-                    <td>투자</td>
-                    <td>300,000원</td>
-                    <td>450,000원</td>
-                    <td>+150,000원</td>
+                <tr th:each="transaction : ${transactions}">
+                    <td th:text="${transaction.transactionDate}">2026-04-25</td>
+                    <td th:class="${transaction.type.name() == 'INCOME' ? 'income' : 'expense'}"
+                        th:text="${transaction.type.name() == 'INCOME' ? '수입' : '지출'}">지출</td>
+                    <td th:text="${transaction.category}">식비</td>
+                    <td th:text="${transaction.createdByName}">홍길동</td>
+                    <td th:text="${transaction.paymentRequired ? '필요' : (transaction.paymentCompleted ? '완료' : '-')}">필요</td>
+                    <td th:text="${transaction.description}">점심</td>
+                    <td class="amount"
+                        th:classappend="${transaction.type.name() == 'INCOME' ? ' income' : ' expense'}"
+                        th:text="${(transaction.type.name() == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT') + '원'}">
+                        -10,000원
+                    </td>
+                    <td>
+                        <form th:action="@{/transactions/{transactionId}/delete(transactionId=${transaction.transactionId})}"
+                              method="post">
+                            <input type="hidden" name="returnMonth" th:value="${selectedMonth}">
+                            <button class="delete-btn" type="submit">삭제</button>
+                        </form>
+                    </td>
                 </tr>
-                <tr>
-                    <td>수입</td>
-                    <td>3,000,000원</td>
-                    <td>3,200,000원</td>
-                    <td>+200,000원</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-    <div class="card">
-        <h2>목표 달성률</h2>
-
-        <div class="goal-row">
-            <div class="goal-title">
-                <span>월 생활비 100만원 이하</span>
-                <span>72%</span>
-            </div>
-            <div class="progress-bg">
-                <div class="progress-fill" style="width: 72%;"></div>
-            </div>
+    <section class="section">
+        <div class="section-title">
+            <h2>지급 필요 항목</h2>
+            <button class="complete-btn" type="submit" form="paymentCompleteForm">지급 완료</button>
         </div>
 
-        <div class="goal-row">
-            <div class="goal-title">
-                <span>월 투자 40만원 달성</span>
-                <span>100%</span>
+        <form id="paymentCompleteForm" action="/transactions/payment-complete" method="post">
+            <input type="hidden" name="returnMonth" th:value="${selectedMonth}">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>날짜</th>
+                        <th>구분</th>
+                        <th>항목</th>
+                        <th>작성자</th>
+                        <th>메모</th>
+                        <th class="amount">금액</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(paymentRequiredTransactions)}">
+                        <td class="empty" colspan="7">지급이 필요한 항목이 없습니다.</td>
+                    </tr>
+                    <tr th:each="transaction : ${paymentRequiredTransactions}">
+                        <td>
+                            <input class="select-check" name="transactionIds" type="checkbox"
+                                   th:value="${transaction.transactionId}">
+                        </td>
+                        <td th:text="${transaction.transactionDate}">2026-04-25</td>
+                        <td th:class="${transaction.type.name() == 'INCOME' ? 'income' : 'expense'}"
+                            th:text="${transaction.type.name() == 'INCOME' ? '수입' : '지출'}">지출</td>
+                        <td th:text="${transaction.category}">식비</td>
+                        <td th:text="${transaction.createdByName}">홍길동</td>
+                        <td th:text="${transaction.description}">점심</td>
+                        <td class="amount"
+                            th:classappend="${transaction.type.name() == 'INCOME' ? ' income' : ' expense'}"
+                            th:text="${(transaction.type.name() == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT') + '원'}">
+                            -10,000원
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="progress-bg">
-                <div class="progress-fill" style="width: 100%;"></div>
-            </div>
-        </div>
-    </div>
+        </form>
+    </section>
 
 </div>
 
 <script>
+    const defaultTypeOptions = [
+        {label: "지출", value: "EXPENSE"},
+        {label: "수입", value: "INCOME"}
+    ];
+    const defaultCategoryOptions = ["식비", "월급", "교통비", "주거비", "통신비", "쇼핑"];
+
+    function readOptions(key, defaults) {
+        const storedValue = localStorage.getItem(key);
+
+        if (!storedValue) {
+            return defaults;
+        }
+
+        try {
+            const parsedValue = JSON.parse(storedValue);
+            return Array.isArray(parsedValue) ? parsedValue : defaults;
+        } catch (error) {
+            return defaults;
+        }
+    }
+
+    function renderSelectOptions() {
+        const typeSelect = document.getElementById("type");
+        const categorySelect = document.getElementById("category");
+        const typeOptions = readOptions("transactionTypeOptions", defaultTypeOptions);
+        const categoryOptions = readOptions("transactionCategoryOptions", defaultCategoryOptions);
+
+        typeSelect.innerHTML = "";
+        typeOptions.forEach((option) => {
+            const item = document.createElement("option");
+            item.value = option.value;
+            item.textContent = option.label;
+            typeSelect.appendChild(item);
+        });
+
+        categorySelect.innerHTML = "";
+        categoryOptions.forEach((category) => {
+            const item = document.createElement("option");
+            item.value = category;
+            item.textContent = category;
+            categorySelect.appendChild(item);
+        });
+    }
+
+    function toggleSettingsMenu() {
+        const popover = document.getElementById("settingsPopover");
+        const trigger = document.querySelector(".settings-trigger");
+        const isOpen = popover.classList.toggle("open");
+        trigger.setAttribute("aria-expanded", String(isOpen));
+    }
+
     function logout() {
         fetch("/api/auth/logout", {
             method: "POST"
@@ -210,6 +620,19 @@
             location.href = "/login";
         });
     }
+
+    document.addEventListener("click", (event) => {
+        const menuWrap = document.querySelector(".settings-menu-wrap");
+        const popover = document.getElementById("settingsPopover");
+        const trigger = document.querySelector(".settings-trigger");
+
+        if (!menuWrap.contains(event.target)) {
+            popover.classList.remove("open");
+            trigger.setAttribute("aria-expanded", "false");
+        }
+    });
+
+    renderSelectOptions();
 </script>
 
 </body>
