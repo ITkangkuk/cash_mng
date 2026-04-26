@@ -362,6 +362,127 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px 12px 24px;
+            }
+
+            .header {
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header p {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .header-actions {
+                gap: 8px;
+                justify-content: flex-start;
+            }
+
+            .report-btn,
+            .logout-btn {
+                min-height: 38px;
+                padding: 0 13px;
+                font-size: 14px;
+            }
+
+            .settings-trigger {
+                width: 38px;
+                height: 38px;
+                font-size: 18px;
+            }
+
+            .settings-popover {
+                min-width: 132px;
+            }
+
+            .month-bar {
+                gap: 10px;
+                margin-bottom: 14px;
+                padding: 12px;
+            }
+
+            .month-title {
+                flex: 1;
+                font-size: 19px;
+            }
+
+            .nav-btn {
+                min-width: 38px;
+                height: 36px;
+                padding: 0 10px;
+            }
+
+            .summary-grid {
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            .summary-card {
+                padding: 14px 16px;
+            }
+
+            .summary-card strong {
+                margin-top: 6px;
+                font-size: 22px;
+            }
+
+            .section {
+                margin-top: 14px;
+                padding: 16px;
+            }
+
+            .section-title {
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            .section-title h2 {
+                font-size: 19px;
+            }
+
+            .transaction-form,
+            .memo-row {
+                gap: 10px;
+            }
+
+            input,
+            select,
+            .checkbox-field,
+            .submit-btn {
+                height: 38px;
+                font-size: 14px;
+            }
+
+            input,
+            select,
+            .checkbox-field {
+                border-radius: 7px;
+                padding: 0 10px;
+            }
+
+            label {
+                margin-bottom: 5px;
+            }
+
+            .complete-btn {
+                width: 100%;
+                height: 38px;
+            }
+
+            th,
+            td {
+                padding: 11px 10px;
+            }
+        }
     </style>
 
     <link rel="icon" href="/images/cash_mng_icon.png">
