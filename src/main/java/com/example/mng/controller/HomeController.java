@@ -5,6 +5,7 @@ import com.example.mng.entity.TransactionType;
 import com.example.mng.entity.User;
 import com.example.mng.repository.FinancialTransactionRepository;
 import com.example.mng.repository.UserRepository;
+import com.example.mng.service.TransactionOptionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,11 +26,14 @@ public class HomeController {
 
     private final FinancialTransactionRepository financialTransactionRepository;
     private final UserRepository userRepository;
+    private final TransactionOptionService transactionOptionService;
 
     public HomeController(FinancialTransactionRepository financialTransactionRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          TransactionOptionService transactionOptionService) {
         this.financialTransactionRepository = financialTransactionRepository;
         this.userRepository = userRepository;
+        this.transactionOptionService = transactionOptionService;
     }
 
     @GetMapping("/")
@@ -74,6 +78,8 @@ public class HomeController {
         model.addAttribute("incomeTotal", incomeTotal);
         model.addAttribute("expenseTotal", expenseTotal);
         model.addAttribute("balance", incomeTotal.subtract(expenseTotal));
+        model.addAttribute("categoryOptions", transactionOptionService.categoryOptions(userId));
+        model.addAttribute("typeOptions", transactionOptionService.typeOptions(userId));
 
         return "dashboard";
     }
@@ -132,6 +138,8 @@ public class HomeController {
         }
 
         model.addAttribute("userName", session.getAttribute("userName"));
+        model.addAttribute("categoryOptions", transactionOptionService.categoryOptions((Long) loginUser));
+        model.addAttribute("typeOptions", transactionOptionService.typeOptions((Long) loginUser));
 
         return "settings";
     }

@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/cash_mng
-    username: cash_user
-    password: 운영DB비밀번호
+    url: jdbc:postgresql://localhost:5432/finance_db
+    username: postgres
+    password: cashmng12#$
     driver-class-name: org.postgresql.Driver
 
   jpa:

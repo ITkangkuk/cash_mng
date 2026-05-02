@@ -302,16 +302,26 @@
             <span>거래 추가의 항목 select에 표시됩니다.</span>
         </div>
 
-        <form class="settings-form" onsubmit="addCategory(event)">
+        <form class="settings-form" th:action="@{/settings/categories}" method="post">
             <div class="field">
                 <label for="categoryInput">항목 이름</label>
-                <input id="categoryInput" type="text" maxlength="50" placeholder="예: 식비" required>
+                <input id="categoryInput" name="label" type="text" maxlength="50" placeholder="예: 식비" required>
             </div>
             <button class="add-btn" type="submit">추가</button>
         </form>
 
-        <div class="option-list" id="categoryList"></div>
-        <button class="reset-btn" type="button" onclick="resetCategories()">기본값 복원</button>
+        <div class="option-list">
+            <div th:if="${#lists.isEmpty(categoryOptions)}" class="empty">등록된 항목이 없습니다.</div>
+            <div class="option-row" th:each="category : ${categoryOptions}">
+                <div class="option-name" th:text="${category.label}">식비</div>
+                <form th:action="@{/settings/options/{optionId}/delete(optionId=${category.id})}" method="post">
+                    <button class="remove-btn" type="submit">삭제</button>
+                </form>
+            </div>
+        </div>
+        <form th:action="@{/settings/categories/reset}" method="post">
+            <button class="reset-btn" type="submit">기본값 복원</button>
+        </form>
     </section>
 
     <section class="section">
@@ -320,14 +330,14 @@
             <span>수입/지출 중 어떤 값으로 저장할지 선택합니다.</span>
         </div>
 
-        <form class="settings-form" onsubmit="addTypeOption(event)">
+        <form class="settings-form" th:action="@{/settings/types}" method="post">
             <div class="field">
                 <label for="typeLabelInput">표시 이름</label>
-                <input id="typeLabelInput" type="text" maxlength="30" placeholder="예: 생활비 지출" required>
+                <input id="typeLabelInput" name="label" type="text" maxlength="30" placeholder="예: 생활비 지출" required>
             </div>
             <div class="field type-value-field">
                 <label for="typeValueInput">저장 구분</label>
-                <select id="typeValueInput" required>
+                <select id="typeValueInput" name="typeValue" required>
                     <option value="EXPENSE">지출</option>
                     <option value="INCOME">수입</option>
                 </select>
@@ -335,157 +345,26 @@
             <button class="add-btn" type="submit">추가</button>
         </form>
 
-        <div class="option-list" id="typeList"></div>
-        <button class="reset-btn" type="button" onclick="resetTypeOptions()">기본값 복원</button>
+        <div class="option-list">
+            <div th:if="${#lists.isEmpty(typeOptions)}" class="empty">등록된 구분이 없습니다.</div>
+            <div class="option-row" th:each="typeOption : ${typeOptions}">
+                <div>
+                    <div class="option-name" th:text="${typeOption.label}">지출</div>
+                    <div class="option-meta"
+                         th:text="${typeOption.value.name() == 'INCOME' ? '수입으로 저장' : '지출로 저장'}">
+                        지출로 저장
+                    </div>
+                </div>
+                <form th:action="@{/settings/options/{optionId}/delete(optionId=${typeOption.id})}" method="post">
+                    <button class="remove-btn" type="submit">삭제</button>
+                </form>
+            </div>
+        </div>
+        <form th:action="@{/settings/types/reset}" method="post">
+            <button class="reset-btn" type="submit">기본값 복원</button>
+        </form>
     </section>
 </div>
-
-<script>
-    const defaultTypeOptions = [
-        {label: "지출", value: "EXPENSE"},
-        {label: "수입", value: "INCOME"}
-    ];
-    const defaultCategoryOptions = ["식비", "월급", "교통비", "주거비", "통신비", "쇼핑"];
-
-    function readOptions(key, defaults) {
-        const storedValue = localStorage.getItem(key);
-
-        if (!storedValue) {
-            return [...defaults];
-        }
-
-        try {
-            const parsedValue = JSON.parse(storedValue);
-            return Array.isArray(parsedValue) ? parsedValue : [...defaults];
-        } catch (error) {
-            return [...defaults];
-        }
-    }
-
-    function writeOptions(key, options) {
-        localStorage.setItem(key, JSON.stringify(options));
-    }
-
-    function normalizeText(value) {
-        return value.trim().replace(/\s+/g, " ");
-    }
-
-    function renderCategories() {
-        const list = document.getElementById("categoryList");
-        const categories = readOptions("transactionCategoryOptions", defaultCategoryOptions);
-
-        list.innerHTML = "";
-
-        if (categories.length === 0) {
-            list.innerHTML = '<div class="empty">등록된 항목이 없습니다.</div>';
-            return;
-        }
-
-        categories.forEach((category, index) => {
-            const row = document.createElement("div");
-            row.className = "option-row";
-            row.innerHTML = `
-                <div class="option-name"></div>
-                <button class="remove-btn" type="button">삭제</button>
-            `;
-            row.querySelector(".option-name").textContent = category;
-            row.querySelector(".remove-btn").addEventListener("click", () => removeCategory(index));
-            list.appendChild(row);
-        });
-    }
-
-    function renderTypes() {
-        const list = document.getElementById("typeList");
-        const typeOptions = readOptions("transactionTypeOptions", defaultTypeOptions);
-
-        list.innerHTML = "";
-
-        if (typeOptions.length === 0) {
-            list.innerHTML = '<div class="empty">등록된 구분이 없습니다.</div>';
-            return;
-        }
-
-        typeOptions.forEach((option, index) => {
-            const row = document.createElement("div");
-            row.className = "option-row";
-            row.innerHTML = `
-                <div>
-                    <div class="option-name"></div>
-                    <div class="option-meta"></div>
-                </div>
-                <button class="remove-btn" type="button">삭제</button>
-            `;
-            row.querySelector(".option-name").textContent = option.label;
-            row.querySelector(".option-meta").textContent = option.value === "INCOME" ? "수입으로 저장" : "지출로 저장";
-            row.querySelector(".remove-btn").addEventListener("click", () => removeTypeOption(index));
-            list.appendChild(row);
-        });
-    }
-
-    function addCategory(event) {
-        event.preventDefault();
-
-        const input = document.getElementById("categoryInput");
-        const category = normalizeText(input.value);
-        const categories = readOptions("transactionCategoryOptions", defaultCategoryOptions);
-
-        if (!category || categories.includes(category)) {
-            input.value = "";
-            return;
-        }
-
-        categories.push(category);
-        writeOptions("transactionCategoryOptions", categories);
-        input.value = "";
-        renderCategories();
-    }
-
-    function removeCategory(index) {
-        const categories = readOptions("transactionCategoryOptions", defaultCategoryOptions);
-        categories.splice(index, 1);
-        writeOptions("transactionCategoryOptions", categories);
-        renderCategories();
-    }
-
-    function resetCategories() {
-        writeOptions("transactionCategoryOptions", defaultCategoryOptions);
-        renderCategories();
-    }
-
-    function addTypeOption(event) {
-        event.preventDefault();
-
-        const labelInput = document.getElementById("typeLabelInput");
-        const valueInput = document.getElementById("typeValueInput");
-        const label = normalizeText(labelInput.value);
-        const typeOptions = readOptions("transactionTypeOptions", defaultTypeOptions);
-
-        if (!label || typeOptions.some((option) => option.label === label)) {
-            labelInput.value = "";
-            return;
-        }
-
-        typeOptions.push({label, value: valueInput.value});
-        writeOptions("transactionTypeOptions", typeOptions);
-        labelInput.value = "";
-        renderTypes();
-    }
-
-    function removeTypeOption(index) {
-        const typeOptions = readOptions("transactionTypeOptions", defaultTypeOptions);
-        typeOptions.splice(index, 1);
-        writeOptions("transactionTypeOptions", typeOptions);
-        renderTypes();
-    }
-
-    function resetTypeOptions() {
-        writeOptions("transactionTypeOptions", defaultTypeOptions);
-        renderTypes();
-    }
-
-    renderCategories();
-    renderTypes();
-</script>
 
 </body>
 </html>

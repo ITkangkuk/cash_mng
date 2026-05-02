@@ -545,14 +545,23 @@
                 <div>
                     <label for="type">구분</label>
                     <select id="type" name="type" required>
-                        <option value="EXPENSE">지출</option>
-                        <option value="INCOME">수입</option>
+                        <option th:each="typeOption : ${typeOptions}"
+                                th:value="${typeOption.value}"
+                                th:text="${typeOption.label}">
+                            지출
+                        </option>
                     </select>
                 </div>
 
                 <div>
                     <label for="category">항목</label>
-                    <select id="category" name="category" required></select>
+                    <select id="category" name="category" required>
+                        <option th:each="category : ${categoryOptions}"
+                                th:value="${category.label}"
+                                th:text="${category.label}">
+                            식비
+                        </option>
+                    </select>
                 </div>
 
                 <div>
@@ -683,50 +692,6 @@
 </div>
 
 <script>
-    const defaultTypeOptions = [
-        {label: "지출", value: "EXPENSE"},
-        {label: "수입", value: "INCOME"}
-    ];
-    const defaultCategoryOptions = ["식비", "월급", "교통비", "주거비", "통신비", "쇼핑"];
-
-    function readOptions(key, defaults) {
-        const storedValue = localStorage.getItem(key);
-
-        if (!storedValue) {
-            return defaults;
-        }
-
-        try {
-            const parsedValue = JSON.parse(storedValue);
-            return Array.isArray(parsedValue) ? parsedValue : defaults;
-        } catch (error) {
-            return defaults;
-        }
-    }
-
-    function renderSelectOptions() {
-        const typeSelect = document.getElementById("type");
-        const categorySelect = document.getElementById("category");
-        const typeOptions = readOptions("transactionTypeOptions", defaultTypeOptions);
-        const categoryOptions = readOptions("transactionCategoryOptions", defaultCategoryOptions);
-
-        typeSelect.innerHTML = "";
-        typeOptions.forEach((option) => {
-            const item = document.createElement("option");
-            item.value = option.value;
-            item.textContent = option.label;
-            typeSelect.appendChild(item);
-        });
-
-        categorySelect.innerHTML = "";
-        categoryOptions.forEach((category) => {
-            const item = document.createElement("option");
-            item.value = category;
-            item.textContent = category;
-            categorySelect.appendChild(item);
-        });
-    }
-
     function toggleSettingsMenu() {
         const popover = document.getElementById("settingsPopover");
         const trigger = document.querySelector(".settings-trigger");
@@ -753,7 +718,6 @@
         }
     });
 
-    renderSelectOptions();
 </script>
 
 </body>
