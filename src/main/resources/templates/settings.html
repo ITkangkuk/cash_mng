@@ -60,6 +60,7 @@
 
         .dashboard-btn,
         .add-btn,
+        .save-btn,
         .remove-btn,
         .reset-btn {
             display: inline-flex;
@@ -72,6 +73,7 @@
             font-weight: 700;
             text-decoration: none;
             white-space: nowrap;
+            font-size: 14px;
         }
 
         .dashboard-btn,
@@ -153,6 +155,30 @@
             border-radius: 8px;
         }
 
+        .inline-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .inline-form input,
+        .inline-form select {
+            height: 38px;
+        }
+
+        .inline-form select {
+            max-width: 150px;
+        }
+
+        .option-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
         .option-name {
             font-weight: 700;
         }
@@ -167,6 +193,23 @@
             padding: 0 14px;
             background: #fee2e2;
             color: var(--danger);
+        }
+
+        .save-btn {
+            height: 38px;
+            min-width: 62px;
+            padding: 0 14px;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .remove-btn {
+            height: 38px;
+            min-width: 62px;
         }
 
         .reset-btn {
@@ -189,9 +232,15 @@
             .header,
             .section-title,
             .settings-form,
-            .option-row {
+            .option-row,
+            .inline-form,
+            .option-actions {
                 align-items: stretch;
                 flex-direction: column;
+            }
+
+            .inline-form select {
+                max-width: none;
             }
 
             .type-value-field {
@@ -220,6 +269,7 @@
 
             .dashboard-btn,
             .add-btn,
+            .save-btn,
             .remove-btn,
             .reset-btn {
                 height: 38px;
@@ -229,6 +279,8 @@
 
             .dashboard-btn,
             .add-btn,
+            .save-btn,
+            .remove-btn,
             .reset-btn {
                 width: 100%;
             }
@@ -271,10 +323,6 @@
                 padding: 9px 10px;
             }
 
-            .remove-btn {
-                align-self: flex-start;
-            }
-
             .reset-btn {
                 margin-top: 12px;
             }
@@ -313,15 +361,64 @@
         <div class="option-list">
             <div th:if="${#lists.isEmpty(categoryOptions)}" class="empty">등록된 항목이 없습니다.</div>
             <div class="option-row" th:each="category : ${categoryOptions}">
-                <div class="option-name" th:text="${category.label}">식비</div>
-                <form th:action="@{/settings/options/{optionId}/delete(optionId=${category.id})}" method="post">
-                    <button class="remove-btn" type="submit">삭제</button>
+                <form class="inline-form" th:action="@{/settings/categories/{optionId}(optionId=${category.id})}" method="post">
+                    <input name="label" type="text" maxlength="50" th:value="${category.label}" required>
+                    <button class="save-btn" type="submit">저장</button>
                 </form>
+                <div class="option-actions">
+                    <form th:action="@{/settings/options/{optionId}/delete(optionId=${category.id})}" method="post">
+                        <button class="remove-btn" type="submit">삭제</button>
+                    </form>
+                </div>
             </div>
         </div>
         <form th:action="@{/settings/categories/reset}" method="post">
             <button class="reset-btn" type="submit">기본값 복원</button>
         </form>
+    </section>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>하위 항목</h2>
+            <span>거래 추가의 하위 항목 select에 표시됩니다.</span>
+        </div>
+
+        <form class="settings-form" th:action="@{/settings/subcategories}" method="post">
+            <div class="field">
+                <label for="subcategoryCategoryInput">상위 항목</label>
+                <select id="subcategoryCategoryInput" name="categoryOptionId" required>
+                    <option th:each="category : ${categoryOptions}"
+                            th:value="${category.id}"
+                            th:text="${category.label}">
+                        식비
+                    </option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="subcategoryInput">하위 항목 이름</label>
+                <input id="subcategoryInput" name="label" type="text" maxlength="50" placeholder="예: 점심" required>
+            </div>
+            <button class="add-btn" type="submit">추가</button>
+        </form>
+
+        <div class="option-list">
+            <div th:if="${#lists.isEmpty(subcategoryOptions)}" class="empty">등록된 하위 항목이 없습니다.</div>
+            <div class="option-row" th:each="subcategory : ${subcategoryOptions}">
+                <form class="inline-form"
+                      th:action="@{/settings/subcategories/{subcategoryId}(subcategoryId=${subcategory.id})}"
+                      method="post">
+                    <span class="option-meta" th:text="${subcategory.categoryLabel}">식비</span>
+                    <input name="label" type="text" maxlength="50" th:value="${subcategory.label}" required>
+                    <button class="save-btn" type="submit">저장</button>
+                </form>
+                <div class="option-actions">
+                    <form th:action="@{/settings/subcategories/{subcategoryId}/delete(subcategoryId=${subcategory.id})}"
+                          method="post">
+                        <button class="remove-btn" type="submit">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section class="section">
@@ -348,16 +445,19 @@
         <div class="option-list">
             <div th:if="${#lists.isEmpty(typeOptions)}" class="empty">등록된 구분이 없습니다.</div>
             <div class="option-row" th:each="typeOption : ${typeOptions}">
-                <div>
-                    <div class="option-name" th:text="${typeOption.label}">지출</div>
-                    <div class="option-meta"
-                         th:text="${typeOption.value.name() == 'INCOME' ? '수입으로 저장' : '지출로 저장'}">
-                        지출로 저장
-                    </div>
-                </div>
-                <form th:action="@{/settings/options/{optionId}/delete(optionId=${typeOption.id})}" method="post">
-                    <button class="remove-btn" type="submit">삭제</button>
+                <form class="inline-form" th:action="@{/settings/types/{optionId}(optionId=${typeOption.id})}" method="post">
+                    <input name="label" type="text" maxlength="30" th:value="${typeOption.label}" required>
+                    <select name="typeValue" required>
+                        <option value="EXPENSE" th:selected="${typeOption.value.name() == 'EXPENSE'}">지출</option>
+                        <option value="INCOME" th:selected="${typeOption.value.name() == 'INCOME'}">수입</option>
+                    </select>
+                    <button class="save-btn" type="submit">저장</button>
                 </form>
+                <div class="option-actions">
+                    <form th:action="@{/settings/options/{optionId}/delete(optionId=${typeOption.id})}" method="post">
+                        <button class="remove-btn" type="submit">삭제</button>
+                    </form>
+                </div>
             </div>
         </div>
         <form th:action="@{/settings/types/reset}" method="post">

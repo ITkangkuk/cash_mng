@@ -39,6 +39,17 @@ public class SettingsController {
         return "redirect:/settings";
     }
 
+    @PostMapping("/settings/categories/{optionId}")
+    public String updateCategory(@PathVariable Long optionId, @RequestParam String label, HttpSession session) {
+        Long userId = loginUserId(session);
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        transactionOptionService.updateCategory(userId, optionId, label);
+        return "redirect:/settings";
+    }
+
     @PostMapping("/settings/types")
     public String addTypeOption(
             @RequestParam String label,
@@ -62,6 +73,63 @@ public class SettingsController {
         }
 
         transactionOptionService.resetTypeOptions(userId);
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/settings/types/{optionId}")
+    public String updateTypeOption(
+            @PathVariable Long optionId,
+            @RequestParam String label,
+            @RequestParam TransactionType typeValue,
+            HttpSession session
+    ) {
+        Long userId = loginUserId(session);
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        transactionOptionService.updateTypeOption(userId, optionId, label, typeValue);
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/settings/subcategories")
+    public String addSubcategory(
+            @RequestParam Long categoryOptionId,
+            @RequestParam String label,
+            HttpSession session
+    ) {
+        Long userId = loginUserId(session);
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        transactionOptionService.addSubcategory(userId, categoryOptionId, label);
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/settings/subcategories/{subcategoryId}")
+    public String updateSubcategory(
+            @PathVariable Long subcategoryId,
+            @RequestParam String label,
+            HttpSession session
+    ) {
+        Long userId = loginUserId(session);
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        transactionOptionService.updateSubcategory(userId, subcategoryId, label);
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/settings/subcategories/{subcategoryId}/delete")
+    public String removeSubcategory(@PathVariable Long subcategoryId, HttpSession session) {
+        Long userId = loginUserId(session);
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        transactionOptionService.removeSubcategory(userId, subcategoryId);
         return "redirect:/settings";
     }
 

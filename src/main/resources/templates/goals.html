@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>목표 비용</title>
+
+    <style>
+        :root {
+            --bg: #f4f6f8;
+            --panel: #ffffff;
+            --line: #e5e7eb;
+            --text: #111827;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .header,
+        .section-title,
+        .goal-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1,
+        .section-title h2 {
+            margin: 0;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            color: var(--muted);
+        }
+
+        .dashboard-btn,
+        .save-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 42px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .dashboard-btn,
+        .save-btn {
+            padding: 0 16px;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .dashboard-btn:hover,
+        .save-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .section {
+            margin-top: 18px;
+            padding: 24px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+        }
+
+        .section-title {
+            margin-bottom: 18px;
+        }
+
+        .goal-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .goal-row {
+            min-height: 52px;
+            padding: 10px 12px;
+            background: #f9fafb;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .goal-label {
+            font-weight: 700;
+        }
+
+        .goal-meta {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .goal-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input {
+            width: 170px;
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0 12px;
+            background: #ffffff;
+            font-size: 15px;
+        }
+
+        .save-btn {
+            height: 38px;
+        }
+
+        .empty {
+            padding: 22px 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @media (max-width: 720px) {
+            .container {
+                padding: 22px 16px;
+            }
+
+            .header,
+            .section-title,
+            .goal-row,
+            .goal-form {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            input,
+            .dashboard-btn,
+            .save-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <link rel="icon" href="/images/cash_mng_icon.png">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>목표 비용</h1>
+            <p th:text="${userName != null ? userName + '님의 항목별 목표 비용을 관리합니다.' : '항목별 목표 비용을 관리합니다.'}">
+                항목별 목표 비용을 관리합니다.
+            </p>
+        </div>
+        <a class="dashboard-btn" href="/dashboard">대시보드</a>
+    </div>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>항목 목표</h2>
+        </div>
+
+        <div class="goal-list">
+            <div th:if="${#lists.isEmpty(categoryOptions)}" class="empty">등록된 항목이 없습니다.</div>
+            <div class="goal-row" th:each="category : ${categoryOptions}">
+                <div>
+                    <div class="goal-label" th:text="${category.label}">식비</div>
+                    <div class="goal-meta">항목 전체 지출 기준</div>
+                </div>
+                <form class="goal-form" action="/goals" method="post">
+                    <input type="hidden" name="categoryOptionId" th:value="${category.id}">
+                    <input name="targetAmount" type="number" min="0" step="1" placeholder="0"
+                           th:value="${goalMap[category.id + ':'] != null ? goalMap[category.id + ':'].targetAmount : ''}"
+                           required>
+                    <button class="save-btn" type="submit">저장</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>하위 항목 목표</h2>
+        </div>
+
+        <div class="goal-list">
+            <div th:if="${#lists.isEmpty(subcategoryOptions)}" class="empty">등록된 하위 항목이 없습니다.</div>
+            <div class="goal-row" th:each="subcategory : ${subcategoryOptions}">
+                <div>
+                    <div class="goal-label" th:text="${subcategory.label}">점심</div>
+                    <div class="goal-meta" th:text="${subcategory.categoryLabel}">식비</div>
+                </div>
+                <form class="goal-form" action="/goals" method="post">
+                    <input type="hidden" name="categoryOptionId" th:value="${subcategory.categoryId}">
+                    <input type="hidden" name="subcategoryOptionId" th:value="${subcategory.id}">
+                    <input name="targetAmount" type="number" min="0" step="1" placeholder="0"
+                           th:value="${goalMap[subcategory.categoryId + ':' + subcategory.id] != null ? goalMap[subcategory.categoryId + ':' + subcategory.id].targetAmount : ''}"
+                           required>
+                    <button class="save-btn" type="submit">저장</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+</body>
+</html>

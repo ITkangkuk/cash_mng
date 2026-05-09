@@ -27,6 +27,9 @@ public class FinancialTransaction {
     @Column(nullable = false, length = 50)
     private String category;
 
+    @Column(length = 50)
+    private String subcategory;
+
     @Column(length = 255)
     private String description;
 
@@ -86,6 +89,14 @@ public class FinancialTransaction {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getSubcategory() {
+        return subcategory;
+    }
+
+    public void setSubcategory(String subcategory) {
+        this.subcategory = subcategory;
     }
 
     public String getDescription() {

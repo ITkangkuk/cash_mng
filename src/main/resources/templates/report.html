@@ -67,6 +67,7 @@
 
         .nav-btn,
         .dashboard-btn,
+        .goal-btn,
         .settings-trigger,
         .menu-item,
         .logout-btn {
@@ -84,6 +85,12 @@
         .dashboard-btn {
             padding: 10px 16px;
             background: var(--primary);
+            color: #ffffff;
+        }
+
+        .goal-btn {
+            padding: 10px 16px;
+            background: #1d4ed8;
             color: #ffffff;
         }
 
@@ -332,6 +339,7 @@
             }
 
             .dashboard-btn,
+            .goal-btn,
             .logout-btn {
                 min-height: 38px;
                 padding: 0 13px;
@@ -415,6 +423,7 @@
         </div>
         <div class="header-actions">
             <a class="dashboard-btn" th:href="@{/dashboard(month=${selectedMonth})}">대시보드</a>
+            <a class="goal-btn" href="/goals">목표 비용</a>
             <div class="settings-menu-wrap">
                 <button class="settings-trigger" type="button" onclick="toggleSettingsMenu()" aria-label="설정 메뉴"
                         aria-expanded="false">
@@ -473,16 +482,24 @@
 
         <section class="card">
             <div class="section-title">
-                <h2>목표 달성률</h2>
+                <h2>목표 비용 사용률</h2>
             </div>
 
-            <div class="goal-row">
+            <div th:if="${#lists.isEmpty(goalProgressList)}" class="empty">
+                설정된 목표 비용이 없습니다.
+            </div>
+
+            <div class="goal-row" th:each="goal : ${goalProgressList}">
                 <div class="goal-title">
-                    <span>월 지출 100만원 이하</span>
-                    <span th:text="${expenseGoalPercent} + '%'">0%</span>
+                    <span th:text="${goal.subcategory != null ? goal.category + ' / ' + goal.subcategory : goal.category}">식비</span>
+                    <span th:text="${goal.percent} + '%'">0%</span>
                 </div>
                 <div class="progress-bg">
-                    <div class="progress-fill" th:style="'width: ' + ${expenseGoalPercent} + '%;'"></div>
+                    <div class="progress-fill" th:style="'width: ' + ${goal.percent} + '%;'"></div>
+                </div>
+                <div class="goal-title" style="margin-top: 6px; color: var(--muted); font-size: 13px;">
+                    <span th:text="${#numbers.formatDecimal(goal.usedAmount, 0, 'COMMA', 0, 'POINT')} + '원 사용'">0원 사용</span>
+                    <span th:text="${#numbers.formatDecimal(goal.targetAmount, 0, 'COMMA', 0, 'POINT')} + '원 목표'">0원 목표</span>
                 </div>
             </div>
 

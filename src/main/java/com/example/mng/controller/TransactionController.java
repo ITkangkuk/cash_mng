@@ -31,6 +31,7 @@ public class TransactionController {
     public String createTransaction(
             @RequestParam TransactionType type,
             @RequestParam String category,
+            @RequestParam(required = false) String subcategory,
             @RequestParam BigDecimal amount,
             @RequestParam LocalDate transactionDate,
             @RequestParam(defaultValue = "false") boolean paymentRequired,
@@ -59,6 +60,7 @@ public class TransactionController {
         transaction.setCreatedByName(createdByName);
         transaction.setType(type);
         transaction.setCategory(category.trim());
+        transaction.setSubcategory(subcategory == null || subcategory.isBlank() ? null : subcategory.trim());
         transaction.setAmount(amount);
         transaction.setTransactionDate(transactionDate);
         transaction.setPaymentRequired(paymentRequired);

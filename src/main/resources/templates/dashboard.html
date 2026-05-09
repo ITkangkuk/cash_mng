@@ -55,6 +55,7 @@
 
         .nav-btn,
         .report-btn,
+        .goal-btn,
         .settings-trigger,
         .menu-item,
         .logout-btn,
@@ -130,6 +131,12 @@
         .report-btn {
             padding: 10px 16px;
             background: var(--primary);
+            color: #ffffff;
+        }
+
+        .goal-btn {
+            padding: 10px 16px;
+            background: #1d4ed8;
             color: #ffffff;
         }
 
@@ -218,9 +225,17 @@
 
         .transaction-form {
             display: grid;
-            grid-template-columns: 130px 1fr 160px 170px;
+            grid-template-columns: 130px 1fr 1fr 160px 170px;
             gap: 12px;
             align-items: end;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: 130px 1fr 1fr 170px 110px;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 16px;
         }
 
         .memo-row {
@@ -358,6 +373,7 @@
 
             .summary-grid,
             .transaction-form,
+            .filter-form,
             .memo-row {
                 grid-template-columns: 1fr;
             }
@@ -388,6 +404,7 @@
             }
 
             .report-btn,
+            .goal-btn,
             .logout-btn {
                 min-height: 38px;
                 padding: 0 13px;
@@ -450,6 +467,7 @@
             }
 
             .transaction-form,
+            .filter-form,
             .memo-row {
                 gap: 10px;
             }
@@ -500,6 +518,7 @@
         </div>
         <div class="header-actions">
             <a class="report-btn" th:href="@{/report(month=${selectedMonth})}">레포트</a>
+            <a class="goal-btn" href="/goals">목표 비용</a>
             <div class="settings-menu-wrap">
                 <button class="settings-trigger" type="button" onclick="toggleSettingsMenu()" aria-label="설정 메뉴"
                         aria-expanded="false">
@@ -555,11 +574,25 @@
 
                 <div>
                     <label for="category">항목</label>
-                    <select id="category" name="category" required>
+                    <select id="category" name="category" onchange="syncSubcategoryOptions()" required>
                         <option th:each="category : ${categoryOptions}"
+                                th:attr="data-category-id=${category.id}"
                                 th:value="${category.label}"
                                 th:text="${category.label}">
                             식비
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="subcategory">하위 항목</label>
+                    <select id="subcategory" name="subcategory">
+                        <option value="">선택 안 함</option>
+                        <option th:each="subcategory : ${subcategoryOptions}"
+                                th:attr="data-category-id=${subcategory.categoryId}"
+                                th:value="${subcategory.label}"
+                                th:text="${subcategory.label}">
+                            점심
                         </option>
                     </select>
                 </div>
@@ -597,6 +630,55 @@
             <h2>거래 내역</h2>
         </div>
 
+        <form class="filter-form" th:action="@{/dashboard}" method="get">
+            <input type="hidden" name="month" th:value="${selectedMonth}">
+            <div>
+                <label for="filterType">구분</label>
+                <select id="filterType" name="filterType">
+                    <option value="">전체</option>
+                    <option value="EXPENSE" th:selected="${filterType != null and filterType.name() == 'EXPENSE'}">지출</option>
+                    <option value="INCOME" th:selected="${filterType != null and filterType.name() == 'INCOME'}">수입</option>
+                </select>
+            </div>
+            <div>
+                <label for="filterCategory">항목</label>
+                <select id="filterCategory" name="filterCategory" onchange="syncFilterSubcategoryOptions()">
+                    <option value="">전체</option>
+                    <option th:each="category : ${categoryOptions}"
+                            th:attr="data-category-id=${category.id}"
+                            th:value="${category.label}"
+                            th:selected="${category.label == filterCategory}"
+                            th:text="${category.label}">
+                        식비
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label for="filterSubcategory">하위 항목</label>
+                <select id="filterSubcategory" name="filterSubcategory">
+                    <option value="">전체</option>
+                    <option th:each="subcategory : ${subcategoryOptions}"
+                            th:attr="data-category-id=${subcategory.categoryId}"
+                            th:value="${subcategory.label}"
+                            th:selected="${subcategory.label == filterSubcategory}"
+                            th:text="${subcategory.label}">
+                        점심
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label for="sort">정렬</label>
+                <select id="sort" name="sort">
+                    <option value="dateDesc" th:selected="${sort == 'dateDesc'}">최신순</option>
+                    <option value="dateAsc" th:selected="${sort == 'dateAsc'}">오래된순</option>
+                    <option value="amountDesc" th:selected="${sort == 'amountDesc'}">금액 높은순</option>
+                    <option value="amountAsc" th:selected="${sort == 'amountAsc'}">금액 낮은순</option>
+                    <option value="categoryAsc" th:selected="${sort == 'categoryAsc'}">항목순</option>
+                </select>
+            </div>
+            <button class="submit-btn" type="submit">적용</button>
+        </form>
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -604,6 +686,7 @@
                     <th>날짜</th>
                     <th>구분</th>
                     <th>항목</th>
+                    <th>하위 항목</th>
                     <th>작성자</th>
                     <th>지급</th>
                     <th>메모</th>
@@ -613,13 +696,14 @@
                 </thead>
                 <tbody>
                 <tr th:if="${#lists.isEmpty(transactions)}">
-                    <td class="empty" colspan="8">아직 등록된 거래가 없습니다.</td>
+                    <td class="empty" colspan="9">아직 등록된 거래가 없습니다.</td>
                 </tr>
                 <tr th:each="transaction : ${transactions}">
                     <td th:text="${transaction.transactionDate}">2026-04-25</td>
                     <td th:class="${transaction.type.name() == 'INCOME' ? 'income' : 'expense'}"
                         th:text="${transaction.type.name() == 'INCOME' ? '수입' : '지출'}">지출</td>
                     <td th:text="${transaction.category}">식비</td>
+                    <td th:text="${transaction.subcategory != null and !transaction.subcategory.isBlank() ? transaction.subcategory : '-'}">점심</td>
                     <td th:text="${transaction.createdByName}">홍길동</td>
                     <td th:text="${transaction.paymentRequired ? '필요' : (transaction.paymentCompleted ? '완료' : '-')}">필요</td>
                     <td th:text="${transaction.description}">점심</td>
@@ -657,6 +741,7 @@
                         <th>날짜</th>
                         <th>구분</th>
                         <th>항목</th>
+                        <th>하위 항목</th>
                         <th>작성자</th>
                         <th>메모</th>
                         <th class="amount">금액</th>
@@ -664,7 +749,7 @@
                     </thead>
                     <tbody>
                     <tr th:if="${#lists.isEmpty(paymentRequiredTransactions)}">
-                        <td class="empty" colspan="7">지급이 필요한 항목이 없습니다.</td>
+                        <td class="empty" colspan="8">지급이 필요한 항목이 없습니다.</td>
                     </tr>
                     <tr th:each="transaction : ${paymentRequiredTransactions}">
                         <td>
@@ -675,6 +760,7 @@
                         <td th:class="${transaction.type.name() == 'INCOME' ? 'income' : 'expense'}"
                             th:text="${transaction.type.name() == 'INCOME' ? '수입' : '지출'}">지출</td>
                         <td th:text="${transaction.category}">식비</td>
+                        <td th:text="${transaction.subcategory != null and !transaction.subcategory.isBlank() ? transaction.subcategory : '-'}">점심</td>
                         <td th:text="${transaction.createdByName}">홍길동</td>
                         <td th:text="${transaction.description}">점심</td>
                         <td class="amount"
@@ -707,6 +793,39 @@
         });
     }
 
+    function syncSubcategoryOptions() {
+        syncDependentSelect("category", "subcategory");
+    }
+
+    function syncFilterSubcategoryOptions() {
+        syncDependentSelect("filterCategory", "filterSubcategory");
+    }
+
+    function syncDependentSelect(categorySelectId, subcategorySelectId) {
+        const categorySelect = document.getElementById(categorySelectId);
+        const subcategorySelect = document.getElementById(subcategorySelectId);
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        const selectedCategoryId = selectedOption ? selectedOption.dataset.categoryId : "";
+        let visibleSelected = false;
+
+        Array.from(subcategorySelect.options).forEach((option) => {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+
+            const visible = !selectedCategoryId || option.dataset.categoryId === selectedCategoryId;
+            option.hidden = !visible;
+            if (visible && option.selected) {
+                visibleSelected = true;
+            }
+        });
+
+        if (!visibleSelected) {
+            subcategorySelect.value = "";
+        }
+    }
+
     document.addEventListener("click", (event) => {
         const menuWrap = document.querySelector(".settings-menu-wrap");
         const popover = document.getElementById("settingsPopover");
@@ -717,6 +836,9 @@
             trigger.setAttribute("aria-expanded", "false");
         }
     });
+
+    syncSubcategoryOptions();
+    syncFilterSubcategoryOptions();
 
 </script>
 
